@@ -1,6 +1,24 @@
 import * as THREE from 'three';
 
 // ============================================================================
+// MOBILE DETECTION
+// ============================================================================
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                 (window.innerWidth <= 768);
+
+// ============================================================================
+// MOBILE INPUT STATE
+// ============================================================================
+const mobileInput = {
+    leftJoystick: { x: 0, y: 0 },
+    rightJoystick: { x: 0, y: 0 },
+    tiltEnabled: false,
+    tilt: { roll: 0, pitch: 0 },
+    shooting: false,
+    turbo: false
+};
+
+// ============================================================================
 // GAME STATE
 // ============================================================================
 const gameState = {
@@ -909,22 +927,49 @@ function gameLoop(currentTime) {
 
     // Update helicopter
     if (helicopter) {
-        // Apply input
-        helicopter.thrust = input.up ? helicopter.maxThrust :
-                           input.down ? -helicopter.maxThrust * 0.5 : 0;
-        helicopter.yawInput = input.left ? -1 : input.right ? 1 : 0;
-        helicopter.rollInput = input.rollLeft ? -1 : input.rollRight ? 1 : 0;
-        helicopter.pitchInput = input.pitchDown ? -1 : input.pitchUp ? 1 : 0;
-        helicopter.turbo = input.turbo;
+        // Apply input (keyboard or mobile)
+        if (isMobile) {
+            // Mobile controls
+            // Left joystick: Y axis controls thrust, X axis controls yaw
+            helicopter.thrust = -mobileInput.leftJoystick.y * helicopter.maxThrust;
+            helicopter.yawInput = mobileInput.leftJoystick.x;
+
+            // Right joystick: controls pitch and roll
+            helicopter.rollInput = mobileInput.rightJoystick.x;
+            helicopter.pitchInput = -mobileInput.rightJoystick.y;
+
+            // Tilt overrides if enabled
+            if (mobileInput.tiltEnabled) {
+                helicopter.rollInput = mobileInput.tilt.roll;
+                helicopter.pitchInput = mobileInput.tilt.pitch;
+            }
+
+            helicopter.turbo = mobileInput.turbo;
+
+            // Shooting
+            if (mobileInput.shooting && currentTime - lastShootTime > shootDelay * 1000) {
+                lastShootTime = currentTime;
+                const newBullets = helicopter.shoot();
+                bullets.push(...newBullets);
+            }
+        } else {
+            // Keyboard controls
+            helicopter.thrust = input.up ? helicopter.maxThrust :
+                               input.down ? -helicopter.maxThrust * 0.5 : 0;
+            helicopter.yawInput = input.left ? -1 : input.right ? 1 : 0;
+            helicopter.rollInput = input.rollLeft ? -1 : input.rollRight ? 1 : 0;
+            helicopter.pitchInput = input.pitchDown ? -1 : input.pitchUp ? 1 : 0;
+            helicopter.turbo = input.turbo;
+
+            // Shooting
+            if (input.shoot && currentTime - lastShootTime > shootDelay * 1000) {
+                lastShootTime = currentTime;
+                const newBullets = helicopter.shoot();
+                bullets.push(...newBullets);
+            }
+        }
 
         helicopter.update(deltaTime);
-
-        // Shooting
-        if (input.shoot && currentTime - lastShootTime > shootDelay * 1000) {
-            lastShootTime = currentTime;
-            const newBullets = helicopter.shoot();
-            bullets.push(...newBullets);
-        }
     }
 
     // Update bullets
@@ -989,6 +1034,221 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// ============================================================================
+// MOBILE CONTROLS
+// ============================================================================
+if (isMobile) {
+    // Show mobile controls
+    document.getElementById('mobile-controls').classList.remove('hidden');
+
+    // Virtual Joysticks
+    class VirtualJoystick {
+        constructor(containerId, stickId) {
+            this.container = document.getElementById(containerId);
+            this.stick = document.getElementById(stickId);
+            this.base = this.container.querySelector('.joystick-base');
+
+            this.maxDistance = 35; // pixels from center
+            this.active = false;
+            this.position = { x: 0, y: 0 };
+            this.touchId = null;
+
+            this.initEvents();
+        }
+
+        initEvents() {
+            this.base.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+            document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+            document.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+            document.addEventListener('touchcancel', this.onTouchEnd.bind(this), { passive: false });
+        }
+
+        onTouchStart(e) {
+            e.preventDefault();
+            if (!this.active) {
+                this.active = true;
+                this.touchId = e.touches[0].identifier;
+                this.updatePosition(e.touches[0]);
+            }
+        }
+
+        onTouchMove(e) {
+            e.preventDefault();
+            if (!this.active) return;
+
+            for (let touch of e.touches) {
+                if (touch.identifier === this.touchId) {
+                    this.updatePosition(touch);
+                    break;
+                }
+            }
+        }
+
+        onTouchEnd(e) {
+            if (!this.active) return;
+
+            let touchEnded = true;
+            for (let touch of e.touches) {
+                if (touch.identifier === this.touchId) {
+                    touchEnded = false;
+                    break;
+                }
+            }
+
+            if (touchEnded) {
+                this.reset();
+            }
+        }
+
+        updatePosition(touch) {
+            const rect = this.base.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            let deltaX = touch.clientX - centerX;
+            let deltaY = touch.clientY - centerY;
+
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            if (distance > this.maxDistance) {
+                const angle = Math.atan2(deltaY, deltaX);
+                deltaX = Math.cos(angle) * this.maxDistance;
+                deltaY = Math.sin(angle) * this.maxDistance;
+            }
+
+            this.position.x = deltaX / this.maxDistance;
+            this.position.y = deltaY / this.maxDistance;
+
+            this.stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+        }
+
+        reset() {
+            this.active = false;
+            this.touchId = null;
+            this.position = { x: 0, y: 0 };
+            this.stick.style.transform = 'translate(-50%, -50%)';
+        }
+
+        getPosition() {
+            return this.position;
+        }
+    }
+
+    const leftJoystick = new VirtualJoystick('joystick-left-container', 'joystick-left-stick');
+    const rightJoystick = new VirtualJoystick('joystick-right-container', 'joystick-right-stick');
+
+    // Update mobile input in game loop
+    setInterval(() => {
+        mobileInput.leftJoystick = leftJoystick.getPosition();
+        mobileInput.rightJoystick = rightJoystick.getPosition();
+    }, 16);
+
+    // Action buttons
+    const shootBtn = document.getElementById('btn-shoot');
+    const turboBtn = document.getElementById('btn-turbo');
+
+    shootBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.shooting = true;
+    });
+
+    shootBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.shooting = false;
+    });
+
+    turboBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.turbo = true;
+    });
+
+    turboBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.turbo = false;
+    });
+
+    // Tilt controls (DeviceOrientation API)
+    const tiltToggle = document.getElementById('tilt-toggle');
+    let tiltCalibration = { roll: 0, pitch: 0 };
+
+    tiltToggle.addEventListener('click', async () => {
+        if (!mobileInput.tiltEnabled) {
+            // Request permission for iOS 13+
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        enableTilt();
+                    } else {
+                        alert('Необходимо разрешение на использование датчиков устройства');
+                    }
+                } catch (error) {
+                    console.error('Error requesting device orientation permission:', error);
+                    alert('Ошибка при запросе разрешения: ' + error.message);
+                }
+            } else {
+                // Non-iOS or older iOS
+                enableTilt();
+            }
+        } else {
+            disableTilt();
+        }
+    });
+
+    function enableTilt() {
+        mobileInput.tiltEnabled = true;
+        tiltToggle.classList.add('active');
+        tiltToggle.textContent = '📱 Тилт активен';
+
+        // Calibrate current position as neutral
+        window.addEventListener('deviceorientation', handleOrientation);
+
+        // Calibrate after a short delay
+        setTimeout(() => {
+            tiltCalibration.roll = mobileInput.tilt.roll;
+            tiltCalibration.pitch = mobileInput.tilt.pitch;
+        }, 500);
+    }
+
+    function disableTilt() {
+        mobileInput.tiltEnabled = false;
+        tiltToggle.classList.remove('active');
+        tiltToggle.textContent = '📱 Включить тилт';
+        window.removeEventListener('deviceorientation', handleOrientation);
+        mobileInput.tilt = { roll: 0, pitch: 0 };
+    }
+
+    function handleOrientation(event) {
+        // beta: front-to-back tilt (-180 to 180)
+        // gamma: left-to-right tilt (-90 to 90)
+
+        const beta = event.beta || 0;  // pitch
+        const gamma = event.gamma || 0; // roll
+
+        // Normalize to -1 to 1 range
+        // For landscape mode, we swap and adjust axes
+        mobileInput.tilt.pitch = Math.max(-1, Math.min(1, gamma / 45));
+        mobileInput.tilt.roll = Math.max(-1, Math.min(1, (beta - 45) / 45));
+    }
+
+    // Check orientation
+    function checkOrientation() {
+        const orientationWarning = document.getElementById('orientation-warning');
+        if (window.innerWidth < window.innerHeight) {
+            // Portrait mode
+            orientationWarning.classList.remove('hidden');
+        } else {
+            // Landscape mode
+            orientationWarning.classList.add('hidden');
+        }
+    }
+
+    checkOrientation();
+    window.addEventListener('orientationchange', checkOrientation);
+    window.addEventListener('resize', checkOrientation);
+}
 
 // ============================================================================
 // START

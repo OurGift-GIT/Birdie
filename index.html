@@ -2,7 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Helicopter Combat - Little Bird</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -62,10 +65,45 @@
             </div>
         </div>
 
-        <!-- Mobile Joystick -->
+        <!-- Mobile Controls -->
         <div id="mobile-controls" class="hidden">
-            <div id="joystick-left" class="joystick"></div>
-            <div id="joystick-right" class="joystick"></div>
+            <!-- Left Joystick (Movement) -->
+            <div class="joystick-container" id="joystick-left-container">
+                <div class="joystick-base">
+                    <div class="joystick-stick" id="joystick-left-stick"></div>
+                </div>
+                <div class="joystick-label">Движение</div>
+            </div>
+
+            <!-- Right Joystick (Rotation) -->
+            <div class="joystick-container" id="joystick-right-container">
+                <div class="joystick-base">
+                    <div class="joystick-stick" id="joystick-right-stick"></div>
+                </div>
+                <div class="joystick-label">Поворот</div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn" id="btn-shoot">
+                    <span>🔫</span>
+                </button>
+                <button class="action-btn" id="btn-turbo">
+                    <span>⚡</span>
+                </button>
+            </div>
+
+            <!-- Tilt Toggle -->
+            <button class="tilt-toggle" id="tilt-toggle">
+                📱 Включить тилт
+            </button>
+
+            <!-- Orientation Warning -->
+            <div id="orientation-warning" class="hidden">
+                <div class="warning-content">
+                    <p>🔄 Поверните устройство горизонтально</p>
+                </div>
+            </div>
         </div>
     </div>
 
