@@ -494,11 +494,6 @@ body {
     #start-screen p {
         font-size: 14px;
     }
-
-    /* Show mobile controls */
-    #mobile-controls {
-        display: block !important;
-    }
 }
 
 /* Portrait orientation warning */
