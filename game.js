@@ -10,12 +10,14 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // MOBILE INPUT STATE
 // ============================================================================
 const mobileInput = {
-    leftJoystick: { x: 0, y: 0 },
-    rightJoystick: { x: 0, y: 0 },
+    thrustUp: false,
+    thrustDown: false,
+    yawLeft: false,
+    yawRight: false,
     tiltEnabled: false,
     tilt: { roll: 0, pitch: 0 },
-    shooting: false,
-    turbo: false
+    tiltCalibration: { roll: 0, pitch: 0 },
+    shooting: false
 };
 
 // ============================================================================
@@ -930,21 +932,27 @@ function gameLoop(currentTime) {
         // Apply input (keyboard or mobile)
         if (isMobile) {
             // Mobile controls
-            // Left joystick: Y axis controls thrust, X axis controls yaw
-            helicopter.thrust = -mobileInput.leftJoystick.y * helicopter.maxThrust;
-            helicopter.yawInput = mobileInput.leftJoystick.x;
+            // Thrust buttons - газ up relative to helicopter, reverse down relative to world
+            if (mobileInput.thrustUp) {
+                helicopter.thrust = helicopter.maxThrust;
+            } else if (mobileInput.thrustDown) {
+                // Reverse thrust - always downward in world space
+                helicopter.thrust = -helicopter.maxThrust * 0.7;
+            } else {
+                helicopter.thrust = 0;
+            }
 
-            // Right joystick: controls pitch and roll
-            helicopter.rollInput = mobileInput.rightJoystick.x;
-            helicopter.pitchInput = -mobileInput.rightJoystick.y;
+            // Yaw buttons
+            helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
 
-            // Tilt overrides if enabled
+            // Tilt controls roll and pitch
             if (mobileInput.tiltEnabled) {
                 helicopter.rollInput = mobileInput.tilt.roll;
                 helicopter.pitchInput = mobileInput.tilt.pitch;
+            } else {
+                helicopter.rollInput = 0;
+                helicopter.pitchInput = 0;
             }
-
-            helicopter.turbo = mobileInput.turbo;
 
             // Shooting
             if (mobileInput.shooting && currentTime - lastShootTime > shootDelay * 1000) {
@@ -1042,135 +1050,70 @@ if (isMobile) {
     // Show mobile controls
     document.getElementById('mobile-controls').classList.remove('hidden');
 
-    // Virtual Joysticks
-    class VirtualJoystick {
-        constructor(containerId, stickId) {
-            this.container = document.getElementById(containerId);
-            this.stick = document.getElementById(stickId);
-            this.base = this.container.querySelector('.joystick-base');
+    // Button Controls
+    const btnThrustUp = document.getElementById('btn-thrust-up');
+    const btnThrustDown = document.getElementById('btn-thrust-down');
+    const btnYawLeft = document.getElementById('btn-yaw-left');
+    const btnYawRight = document.getElementById('btn-yaw-right');
+    const btnShoot = document.getElementById('btn-shoot');
 
-            this.maxDistance = 35; // pixels from center
-            this.active = false;
-            this.position = { x: 0, y: 0 };
-            this.touchId = null;
+    // Thrust Up
+    btnThrustUp.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.thrustUp = true;
+    });
+    btnThrustUp.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.thrustUp = false;
+    });
 
-            this.initEvents();
-        }
+    // Thrust Down (Reverse)
+    btnThrustDown.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.thrustDown = true;
+    });
+    btnThrustDown.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.thrustDown = false;
+    });
 
-        initEvents() {
-            this.base.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
-            document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-            document.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
-            document.addEventListener('touchcancel', this.onTouchEnd.bind(this), { passive: false });
-        }
+    // Yaw Left
+    btnYawLeft.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.yawLeft = true;
+    });
+    btnYawLeft.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.yawLeft = false;
+    });
 
-        onTouchStart(e) {
-            e.preventDefault();
-            if (!this.active) {
-                this.active = true;
-                this.touchId = e.touches[0].identifier;
-                this.updatePosition(e.touches[0]);
-            }
-        }
+    // Yaw Right
+    btnYawRight.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileInput.yawRight = true;
+    });
+    btnYawRight.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.yawRight = false;
+    });
 
-        onTouchMove(e) {
-            e.preventDefault();
-            if (!this.active) return;
-
-            for (let touch of e.touches) {
-                if (touch.identifier === this.touchId) {
-                    this.updatePosition(touch);
-                    break;
-                }
-            }
-        }
-
-        onTouchEnd(e) {
-            if (!this.active) return;
-
-            let touchEnded = true;
-            for (let touch of e.touches) {
-                if (touch.identifier === this.touchId) {
-                    touchEnded = false;
-                    break;
-                }
-            }
-
-            if (touchEnded) {
-                this.reset();
-            }
-        }
-
-        updatePosition(touch) {
-            const rect = this.base.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            let deltaX = touch.clientX - centerX;
-            let deltaY = touch.clientY - centerY;
-
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-            if (distance > this.maxDistance) {
-                const angle = Math.atan2(deltaY, deltaX);
-                deltaX = Math.cos(angle) * this.maxDistance;
-                deltaY = Math.sin(angle) * this.maxDistance;
-            }
-
-            this.position.x = deltaX / this.maxDistance;
-            this.position.y = deltaY / this.maxDistance;
-
-            this.stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-        }
-
-        reset() {
-            this.active = false;
-            this.touchId = null;
-            this.position = { x: 0, y: 0 };
-            this.stick.style.transform = 'translate(-50%, -50%)';
-        }
-
-        getPosition() {
-            return this.position;
-        }
-    }
-
-    const leftJoystick = new VirtualJoystick('joystick-left-container', 'joystick-left-stick');
-    const rightJoystick = new VirtualJoystick('joystick-right-container', 'joystick-right-stick');
-
-    // Update mobile input in game loop
-    setInterval(() => {
-        mobileInput.leftJoystick = leftJoystick.getPosition();
-        mobileInput.rightJoystick = rightJoystick.getPosition();
-    }, 16);
-
-    // Action buttons
-    const shootBtn = document.getElementById('btn-shoot');
-    const turboBtn = document.getElementById('btn-turbo');
-
-    shootBtn.addEventListener('touchstart', (e) => {
+    // Shoot
+    btnShoot.addEventListener('touchstart', (e) => {
         e.preventDefault();
         mobileInput.shooting = true;
     });
-
-    shootBtn.addEventListener('touchend', (e) => {
+    btnShoot.addEventListener('touchend', (e) => {
         e.preventDefault();
         mobileInput.shooting = false;
     });
 
-    turboBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        mobileInput.turbo = true;
-    });
-
-    turboBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        mobileInput.turbo = false;
-    });
-
     // Tilt controls (DeviceOrientation API)
     const tiltToggle = document.getElementById('tilt-toggle');
-    let tiltCalibration = { roll: 0, pitch: 0 };
+    const tiltCalibrate = document.getElementById('tilt-calibrate');
+    const tiltIndicator = document.getElementById('tilt-indicator');
+    const tiltDot = document.getElementById('tilt-dot');
+
+    let rawTilt = { beta: 0, gamma: 0 };
 
     tiltToggle.addEventListener('click', async () => {
         if (!mobileInput.tiltEnabled) {
@@ -1197,18 +1140,22 @@ if (isMobile) {
         }
     });
 
+    tiltCalibrate.addEventListener('click', () => {
+        calibrateTilt();
+    });
+
     function enableTilt() {
         mobileInput.tiltEnabled = true;
         tiltToggle.classList.add('active');
         tiltToggle.textContent = '📱 Тилт активен';
+        tiltCalibrate.classList.remove('hidden');
+        tiltIndicator.classList.remove('hidden');
 
-        // Calibrate current position as neutral
         window.addEventListener('deviceorientation', handleOrientation);
 
-        // Calibrate after a short delay
+        // Auto-calibrate after a short delay
         setTimeout(() => {
-            tiltCalibration.roll = mobileInput.tilt.roll;
-            tiltCalibration.pitch = mobileInput.tilt.pitch;
+            calibrateTilt();
         }, 500);
     }
 
@@ -1216,21 +1163,60 @@ if (isMobile) {
         mobileInput.tiltEnabled = false;
         tiltToggle.classList.remove('active');
         tiltToggle.textContent = '📱 Включить тилт';
+        tiltCalibrate.classList.add('hidden');
+        tiltIndicator.classList.add('hidden');
         window.removeEventListener('deviceorientation', handleOrientation);
         mobileInput.tilt = { roll: 0, pitch: 0 };
     }
 
+    function calibrateTilt() {
+        // Set current position as neutral
+        mobileInput.tiltCalibration.beta = rawTilt.beta;
+        mobileInput.tiltCalibration.gamma = rawTilt.gamma;
+
+        // Visual feedback
+        tiltCalibrate.style.background = 'rgba(255, 255, 0, 0.5)';
+        setTimeout(() => {
+            tiltCalibrate.style.background = '';
+        }, 200);
+    }
+
     function handleOrientation(event) {
-        // beta: front-to-back tilt (-180 to 180)
-        // gamma: left-to-right tilt (-90 to 90)
+        // Store raw values
+        rawTilt.beta = event.beta || 0;
+        rawTilt.gamma = event.gamma || 0;
 
-        const beta = event.beta || 0;  // pitch
-        const gamma = event.gamma || 0; // roll
+        // Apply calibration
+        let calibratedBeta = rawTilt.beta - mobileInput.tiltCalibration.beta;
+        let calibratedGamma = rawTilt.gamma - mobileInput.tiltCalibration.gamma;
 
-        // Normalize to -1 to 1 range
-        // For landscape mode, we swap and adjust axes
-        mobileInput.tilt.pitch = Math.max(-1, Math.min(1, gamma / 45));
-        mobileInput.tilt.roll = Math.max(-1, Math.min(1, (beta - 45) / 45));
+        // For landscape mode (device rotated 90 degrees)
+        // gamma controls pitch (forward/backward tilt)
+        // beta controls roll (left/right tilt)
+
+        // Normalize to -1 to 1 range with dead zone
+        const sensitivity = 30; // degrees for full range
+        const deadZone = 3; // degrees
+
+        // Pitch (forward/back)
+        let pitch = calibratedGamma / sensitivity;
+        if (Math.abs(pitch) < deadZone / sensitivity) pitch = 0;
+        mobileInput.tilt.pitch = Math.max(-1, Math.min(1, pitch));
+
+        // Roll (left/right)
+        let roll = calibratedBeta / sensitivity;
+        if (Math.abs(roll) < deadZone / sensitivity) roll = 0;
+        mobileInput.tilt.roll = Math.max(-1, Math.min(1, roll));
+
+        // Update indicator
+        updateTiltIndicator();
+    }
+
+    function updateTiltIndicator() {
+        const maxOffset = 40; // pixels from center
+        const x = mobileInput.tilt.roll * maxOffset;
+        const y = mobileInput.tilt.pitch * maxOffset;
+        tiltDot.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
     }
 
     // Check orientation

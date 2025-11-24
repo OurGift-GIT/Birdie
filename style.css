@@ -179,102 +179,114 @@ body {
     z-index: 100;
 }
 
-/* Joystick Containers */
-.joystick-container {
+/* Left Control Pad */
+.control-pad-left {
     position: absolute;
-    bottom: 20px;
-    pointer-events: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-#joystick-left-container {
     left: 20px;
-}
-
-#joystick-right-container {
-    right: 20px;
-}
-
-.joystick-base {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 3px solid rgba(0, 255, 0, 0.6);
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-}
-
-.joystick-stick {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 255, 0, 0.7);
-    border: 3px solid rgba(0, 255, 0, 1);
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-    transition: all 0.1s ease;
-}
-
-.joystick-label {
-    color: #0f0;
-    font-size: 12px;
-    font-weight: bold;
-    text-align: center;
-    text-shadow: 0 0 5px #0f0;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 3px 8px;
-    border-radius: 5px;
-}
-
-/* Action Buttons */
-.action-buttons {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     pointer-events: auto;
 }
 
-.action-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
+.control-middle {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.control-btn {
+    width: 80px;
+    height: 80px;
     background: rgba(0, 255, 0, 0.3);
     border: 3px solid rgba(0, 255, 0, 0.8);
+    border-radius: 15px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 32px;
     cursor: pointer;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-    transition: all 0.2s ease;
+    transition: all 0.1s ease;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    color: #0f0;
 }
 
-.action-btn:active {
+.control-btn.control-up,
+.control-btn.control-down {
+    width: 170px;
+}
+
+.control-btn:active {
     background: rgba(0, 255, 0, 0.6);
     transform: scale(0.95);
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
 }
 
-/* Tilt Toggle Button */
-.tilt-toggle {
+.btn-label {
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 2px;
+    text-shadow: 0 0 5px #0f0;
+}
+
+/* Right Control Pad */
+.control-pad-right {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    pointer-events: auto;
+}
+
+.shoot-btn {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 0, 0, 0.3);
+    border: 4px solid rgba(255, 0, 0, 0.8);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    transition: all 0.1s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.shoot-btn:active {
+    background: rgba(255, 0, 0, 0.7);
+    transform: scale(0.95);
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.9);
+}
+
+.shoot-btn .btn-label {
+    font-size: 12px;
+    color: #f00;
+    font-weight: bold;
+}
+
+/* Tilt Controls */
+.tilt-controls {
     position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+    z-index: 1000;
+}
+
+.tilt-toggle,
+.tilt-calibrate {
     padding: 10px 20px;
     background: rgba(0, 0, 0, 0.7);
     border: 2px solid #0f0;
@@ -283,14 +295,15 @@ body {
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    pointer-events: auto;
     transition: all 0.3s ease;
-    z-index: 1000;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-.tilt-toggle:active {
+.tilt-toggle:active,
+.tilt-calibrate:active {
     background: rgba(0, 255, 0, 0.3);
-    transform: translateX(-50%) scale(0.95);
+    transform: scale(0.95);
 }
 
 .tilt-toggle.active {
@@ -298,6 +311,67 @@ body {
     border-color: #0ff;
     color: #0ff;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.tilt-calibrate {
+    border-color: #ff0;
+    color: #ff0;
+}
+
+/* Tilt Indicator */
+.tilt-indicator {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.tilt-cross {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(0, 255, 0, 0.6);
+    border-radius: 10px;
+}
+
+.tilt-cross::before,
+.tilt-cross::after {
+    content: '';
+    position: absolute;
+    background: rgba(0, 255, 0, 0.3);
+}
+
+.tilt-cross::before {
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.tilt-cross::after {
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.tilt-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #0f0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px #0f0;
+    transition: all 0.1s ease;
 }
 
 /* Orientation Warning */
@@ -436,42 +510,53 @@ body {
 
 /* Landscape mode optimizations */
 @media (max-width: 900px) and (orientation: landscape) {
-    .joystick-base {
-        width: 100px;
-        height: 100px;
-    }
-
-    .joystick-stick {
-        width: 40px;
-        height: 40px;
-    }
-
-    .action-btn {
-        width: 60px;
-        height: 60px;
+    .control-btn {
+        width: 70px;
+        height: 70px;
         font-size: 28px;
     }
 
-    .joystick-container {
+    .control-btn.control-up,
+    .control-btn.control-down {
+        width: 150px;
+    }
+
+    .shoot-btn {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+    }
+
+    .control-pad-left,
+    .control-pad-right {
         bottom: 10px;
     }
 
-    #joystick-left-container {
+    .control-pad-left {
         left: 10px;
     }
 
-    #joystick-right-container {
+    .control-pad-right {
         right: 10px;
     }
 
-    .action-buttons {
-        right: 10px;
-        gap: 10px;
-    }
-
-    .tilt-toggle {
+    .tilt-controls {
         top: 10px;
+    }
+
+    .tilt-toggle,
+    .tilt-calibrate {
         padding: 8px 15px;
         font-size: 12px;
+    }
+
+    .tilt-indicator {
+        top: 60px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .btn-label {
+        font-size: 9px;
     }
 }

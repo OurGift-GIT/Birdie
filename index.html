@@ -67,36 +67,50 @@
 
         <!-- Mobile Controls -->
         <div id="mobile-controls" class="hidden">
-            <!-- Left Joystick (Movement) -->
-            <div class="joystick-container" id="joystick-left-container">
-                <div class="joystick-base">
-                    <div class="joystick-stick" id="joystick-left-stick"></div>
+            <!-- Left Control Pad (Thrust & Yaw) -->
+            <div class="control-pad-left">
+                <button class="control-btn control-up" id="btn-thrust-up">
+                    <span>↑</span>
+                    <div class="btn-label">ГАЗ</div>
+                </button>
+                <div class="control-middle">
+                    <button class="control-btn control-left" id="btn-yaw-left">
+                        <span>←</span>
+                    </button>
+                    <button class="control-btn control-right" id="btn-yaw-right">
+                        <span>→</span>
+                    </button>
                 </div>
-                <div class="joystick-label">Движение</div>
+                <button class="control-btn control-down" id="btn-thrust-down">
+                    <span>↓</span>
+                    <div class="btn-label">РЕВЕРС</div>
+                </button>
             </div>
 
-            <!-- Right Joystick (Rotation) -->
-            <div class="joystick-container" id="joystick-right-container">
-                <div class="joystick-base">
-                    <div class="joystick-stick" id="joystick-right-stick"></div>
-                </div>
-                <div class="joystick-label">Поворот</div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="action-btn" id="btn-shoot">
+            <!-- Right Control (Shoot) -->
+            <div class="control-pad-right">
+                <button class="shoot-btn" id="btn-shoot">
                     <span>🔫</span>
-                </button>
-                <button class="action-btn" id="btn-turbo">
-                    <span>⚡</span>
+                    <div class="btn-label">ОГОНЬ</div>
                 </button>
             </div>
 
-            <!-- Tilt Toggle -->
-            <button class="tilt-toggle" id="tilt-toggle">
-                📱 Включить тилт
-            </button>
+            <!-- Tilt Controls -->
+            <div class="tilt-controls">
+                <button class="tilt-toggle" id="tilt-toggle">
+                    📱 Включить тилт
+                </button>
+                <button class="tilt-calibrate hidden" id="tilt-calibrate">
+                    ⚙️ Калибровать
+                </button>
+            </div>
+
+            <!-- Tilt Indicator -->
+            <div class="tilt-indicator hidden" id="tilt-indicator">
+                <div class="tilt-cross">
+                    <div class="tilt-dot" id="tilt-dot"></div>
+                </div>
+            </div>
 
             <!-- Orientation Warning -->
             <div id="orientation-warning" class="hidden">
