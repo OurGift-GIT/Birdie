@@ -208,6 +208,9 @@ class Helicopter {
         const up = new THREE.Vector3(0, 1, 0);
         up.applyMatrix4(rotationMatrix);
         const upForce = up.multiplyScalar(this.thrust * (this.turbo ? 1.5 : 1) * deltaTime);
+        if (this.thrust !== 0) {
+            console.log('⚡ HELICOPTER UPDATE: thrust=', this.thrust, 'upForce=', upForce.y, 'velocity.y=', this.velocity.y);
+        }
         this.velocity.add(upForce);
 
         // Apply rotational forces based on tilt
@@ -937,12 +940,20 @@ function gameLoop(currentTime) {
             // Thrust buttons - газ up relative to helicopter, reverse down relative to world
             if (mobileInput.thrustUp) {
                 helicopter.thrust = helicopter.maxThrust;
+                console.log('🚁 GAME LOOP: thrustUp=true, setting thrust to', helicopter.maxThrust);
             } else if (mobileInput.thrustDown) {
                 // Reverse thrust - always downward in world space
                 helicopter.thrust = -helicopter.maxThrust * 0.7;
+                console.log('🚁 GAME LOOP: thrustDown=true, setting thrust to', -helicopter.maxThrust * 0.7);
             } else {
                 helicopter.thrust = 0;
             }
+            console.log('🎮 Mobile input state:', {
+                thrustUp: mobileInput.thrustUp,
+                thrustDown: mobileInput.thrustDown,
+                thrust: helicopter.thrust,
+                gameStarted: gameState.started
+            });
 
             // Yaw buttons (buttons are swapped in event handlers)
             helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
@@ -1166,7 +1177,16 @@ if (isMobile) {
         }
     });
 
-    tiltCalibrate.addEventListener('click', () => {
+    tiltCalibrate.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        calibrateTilt();
+    });
+
+    // Fallback for non-touch devices
+    tiltCalibrate.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         calibrateTilt();
     });
 
@@ -1200,11 +1220,20 @@ if (isMobile) {
         mobileInput.tiltCalibration.beta = rawTilt.beta;
         mobileInput.tiltCalibration.gamma = rawTilt.gamma;
 
-        // Visual feedback
-        tiltCalibrate.style.background = 'rgba(255, 255, 0, 0.5)';
+        console.log('📐 Calibrating tilt:', {
+            beta: rawTilt.beta,
+            gamma: rawTilt.gamma
+        });
+
+        // Visual feedback - green flash to confirm calibration
+        const originalBg = tiltCalibrate.style.background;
+        tiltCalibrate.style.background = 'rgba(0, 255, 0, 0.6)';
+        tiltCalibrate.textContent = '✓ Откалибровано';
+
         setTimeout(() => {
-            tiltCalibrate.style.background = '';
-        }, 200);
+            tiltCalibrate.style.background = originalBg;
+            tiltCalibrate.textContent = '⚙️ Калибровать';
+        }, 500);
     }
 
     function handleOrientation(event) {
