@@ -943,7 +943,7 @@ function gameLoop(currentTime) {
             }
 
             // Yaw buttons
-            helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
+            helicopter.yawInput = mobileInput.yawLeft ? 1 : mobileInput.yawRight ? -1 : 0;
 
             // Tilt controls roll and pitch
             if (mobileInput.tiltEnabled) {
@@ -1066,6 +1066,10 @@ if (isMobile) {
         e.preventDefault();
         mobileInput.thrustUp = false;
     });
+    btnThrustUp.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        mobileInput.thrustUp = false;
+    });
 
     // Thrust Down (Reverse)
     btnThrustDown.addEventListener('touchstart', (e) => {
@@ -1073,6 +1077,10 @@ if (isMobile) {
         mobileInput.thrustDown = true;
     });
     btnThrustDown.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.thrustDown = false;
+    });
+    btnThrustDown.addEventListener('touchcancel', (e) => {
         e.preventDefault();
         mobileInput.thrustDown = false;
     });
@@ -1086,6 +1094,10 @@ if (isMobile) {
         e.preventDefault();
         mobileInput.yawLeft = false;
     });
+    btnYawLeft.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        mobileInput.yawLeft = false;
+    });
 
     // Yaw Right
     btnYawRight.addEventListener('touchstart', (e) => {
@@ -1096,6 +1108,10 @@ if (isMobile) {
         e.preventDefault();
         mobileInput.yawRight = false;
     });
+    btnYawRight.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        mobileInput.yawRight = false;
+    });
 
     // Shoot
     btnShoot.addEventListener('touchstart', (e) => {
@@ -1103,6 +1119,10 @@ if (isMobile) {
         mobileInput.shooting = true;
     });
     btnShoot.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        mobileInput.shooting = false;
+    });
+    btnShoot.addEventListener('touchcancel', (e) => {
         e.preventDefault();
         mobileInput.shooting = false;
     });
@@ -1191,20 +1211,20 @@ if (isMobile) {
         let calibratedGamma = rawTilt.gamma - mobileInput.tiltCalibration.gamma;
 
         // For landscape mode (device rotated 90 degrees)
-        // gamma controls pitch (forward/backward tilt)
-        // beta controls roll (left/right tilt)
+        // beta controls pitch (forward/backward tilt)
+        // gamma controls roll (left/right tilt)
 
         // Normalize to -1 to 1 range with dead zone
         const sensitivity = 30; // degrees for full range
         const deadZone = 3; // degrees
 
-        // Pitch (forward/back)
-        let pitch = calibratedGamma / sensitivity;
+        // Pitch (forward/back) - use beta
+        let pitch = -calibratedBeta / sensitivity;
         if (Math.abs(pitch) < deadZone / sensitivity) pitch = 0;
         mobileInput.tilt.pitch = Math.max(-1, Math.min(1, pitch));
 
-        // Roll (left/right)
-        let roll = calibratedBeta / sensitivity;
+        // Roll (left/right) - use gamma
+        let roll = calibratedGamma / sensitivity;
         if (Math.abs(roll) < deadZone / sensitivity) roll = 0;
         mobileInput.tilt.roll = Math.max(-1, Math.min(1, roll));
 
