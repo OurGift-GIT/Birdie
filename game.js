@@ -85,7 +85,7 @@ class Helicopter {
 
         // Flight parameters
         this.thrust = 0;
-        this.maxThrust = 0.5;
+        this.maxThrust = 15; // Increased from 0.5 - must overcome gravity (9.81)
         this.rollInput = 0;
         this.pitchInput = 0;
         this.yawInput = 0;
