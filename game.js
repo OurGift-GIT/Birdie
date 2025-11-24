@@ -944,8 +944,8 @@ function gameLoop(currentTime) {
                 helicopter.thrust = 0;
             }
 
-            // Yaw buttons
-            helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
+            // Yaw buttons (swapped signs)
+            helicopter.yawInput = mobileInput.yawLeft ? 1 : mobileInput.yawRight ? -1 : 0;
 
             // Tilt controls roll and pitch
             if (mobileInput.tiltEnabled) {
@@ -1063,10 +1063,12 @@ if (isMobile) {
     btnThrustUp.addEventListener('touchstart', (e) => {
         e.preventDefault();
         mobileInput.thrustUp = true;
+        console.log('THRUST UP: ON');
     });
     btnThrustUp.addEventListener('touchend', (e) => {
         e.preventDefault();
         mobileInput.thrustUp = false;
+        console.log('THRUST UP: OFF');
     });
     btnThrustUp.addEventListener('touchcancel', (e) => {
         e.preventDefault();
