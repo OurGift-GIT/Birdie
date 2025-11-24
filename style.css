@@ -118,17 +118,21 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.9);
-    padding: 40px;
-    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.95);
+    padding: 30px;
+    border-radius: 15px;
     border: 3px solid #0f0;
     text-align: center;
     color: #0f0;
     pointer-events: auto;
-    min-width: 400px;
+    min-width: 300px;
     max-width: 90vw;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
+}
+
+#calibration-screen {
+    padding: 20px 15px;
 }
 
 #game-over h1,
@@ -174,19 +178,23 @@ body {
 }
 
 /* Calibration Screen */
+#calibration-screen {
+    padding: 20px;
+}
+
 #calibration-screen h1 {
     color: #0ff;
-    font-size: 32px;
-    margin-bottom: 30px;
+    font-size: 24px;
+    margin-bottom: 15px;
 }
 
 .calibration-steps {
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .calibration-step {
-    margin: 20px 0;
-    padding: 20px;
+    margin: 10px 0;
+    padding: 15px;
     background: rgba(0, 255, 255, 0.1);
     border-radius: 15px;
     border: 2px solid rgba(0, 255, 255, 0.3);
@@ -194,27 +202,28 @@ body {
 
 .calibration-step h3 {
     color: #0ff;
-    font-size: 24px;
-    margin-bottom: 15px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
 .calibration-step p {
     color: #fff;
-    font-size: 16px;
-    margin: 10px 0;
+    font-size: 14px;
+    margin: 8px 0;
+    line-height: 1.4;
 }
 
 .calibration-step .hint {
     color: #0f0;
-    font-size: 14px;
+    font-size: 12px;
     font-style: italic;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .calibration-btn {
-    margin-top: 20px;
-    padding: 15px 40px;
-    font-size: 20px;
+    margin-top: 15px;
+    padding: 12px 30px;
+    font-size: 16px;
     font-weight: bold;
     background: #0f0;
     color: #000;
@@ -224,14 +233,11 @@ body {
     transition: all 0.3s ease;
 }
 
-.calibration-btn:hover {
-    background: #0ff;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px #0f0;
-}
-
+.calibration-btn:hover,
 .calibration-btn:active {
-    transform: scale(0.95);
+    background: #0ff;
+    transform: scale(0.98);
+    box-shadow: 0 0 15px #0f0;
 }
 
 .calibration-btn.active {
@@ -240,12 +246,12 @@ body {
 }
 
 .calibration-nav {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .skip-btn {
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 8px 16px;
+    font-size: 13px;
     background: rgba(255, 255, 255, 0.1);
     color: #888;
     border: 1px solid #444;
@@ -254,7 +260,8 @@ body {
     transition: all 0.3s ease;
 }
 
-.skip-btn:hover {
+.skip-btn:hover,
+.skip-btn:active {
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
     border-color: #888;

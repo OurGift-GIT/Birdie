@@ -66,39 +66,36 @@
 
             <!-- Tilt Calibration Onboarding -->
             <div id="calibration-screen" class="hidden">
-                <h1>🎮 НАСТРОЙКА УПРАВЛЕНИЯ</h1>
+                <h1>🎮 Настройка</h1>
                 <div class="calibration-steps">
                     <div class="calibration-step" id="step-1">
-                        <h3>Шаг 1: Положение устройства</h3>
-                        <p>Держите устройство <strong>горизонтально</strong> в удобном положении</p>
-                        <p style="font-size: 48px; margin: 20px 0;">📱→</p>
+                        <h3>Шаг 1/3: Положение</h3>
+                        <p>Держите устройство <strong>горизонтально</strong></p>
+                        <p style="font-size: 32px; margin: 15px 0;">📱→</p>
                     </div>
                     <div class="calibration-step hidden" id="step-2">
-                        <h3>Шаг 2: Включите тилт</h3>
-                        <p>Управление через наклоны устройства</p>
+                        <h3>Шаг 2/3: Тилт</h3>
+                        <p>Включите управление наклонами</p>
                         <button id="onboarding-tilt-toggle" class="calibration-btn">
-                            📱 Включить тилт
+                            📱 Включить
                         </button>
-                        <p class="hint" id="tilt-status">Нажмите кнопку выше</p>
+                        <p class="hint" id="tilt-status">Нажмите кнопку</p>
                     </div>
                     <div class="calibration-step hidden" id="step-3">
-                        <h3>Шаг 3: Калибровка</h3>
-                        <p>Держите устройство ровно и нажмите:</p>
+                        <h3>Шаг 3/3: Калибровка</h3>
+                        <p>Держите ровно и нажмите:</p>
                         <button id="onboarding-calibrate" class="calibration-btn">
                             ⚙️ Калибровать
                         </button>
-                        <p class="hint" id="calibration-status">Готовы к калибровке</p>
+                        <p class="hint" id="calibration-status">Готово</p>
                     </div>
                     <div class="calibration-step hidden" id="step-4">
-                        <h3>✓ Всё готово!</h3>
-                        <p>Управление настроено</p>
-                        <p style="margin: 10px 0;">
-                            <strong>ГАЗ/РЕВЕРС</strong> - левые кнопки<br>
-                            <strong>ПОВОРОТЫ</strong> - наклоны устройства<br>
-                            <strong>СТРЕЛЬБА</strong> - автоматическая
-                        </p>
+                        <h3>✓ Готово!</h3>
+                        <p><strong>ГАЗ/РЕВЕРС</strong> - левые кнопки<br>
+                        <strong>ПОВОРОТЫ</strong> - наклоны<br>
+                        <strong>СТРЕЛЬБА</strong> - авто</p>
                         <button id="start-game-btn" class="calibration-btn">
-                            🚁 Начать игру!
+                            🚁 В БОЙ!
                         </button>
                     </div>
                 </div>
@@ -172,6 +169,6 @@
             }
         }
     </script>
-    <script type="module" src="game.js?v=8"></script>
+    <script type="module" src="game.js?v=9"></script>
 </body>
 </html>
