@@ -85,7 +85,7 @@ class Helicopter {
 
         // Flight parameters
         this.thrust = 0;
-        this.maxThrust = 15; // Increased from 0.5 - must overcome gravity (9.81)
+        this.maxThrust = 25; // Increased to 25 for better responsiveness
         this.rollInput = 0;
         this.pitchInput = 0;
         this.yawInput = 0;
@@ -208,9 +208,6 @@ class Helicopter {
         const up = new THREE.Vector3(0, 1, 0);
         up.applyMatrix4(rotationMatrix);
         const upForce = up.multiplyScalar(this.thrust * (this.turbo ? 1.5 : 1) * deltaTime);
-        if (this.thrust !== 0) {
-            console.log('⚡ HELICOPTER UPDATE: thrust=', this.thrust, 'upForce=', upForce.y, 'velocity.y=', this.velocity.y);
-        }
         this.velocity.add(upForce);
 
         // Apply rotational forces based on tilt
@@ -815,6 +812,39 @@ let bullets = [];
 let lastShootTime = 0;
 const shootDelay = 0.1; // 10 shots per second
 
+// ============================================================================
+// CALIBRATION ONBOARDING
+// ============================================================================
+let currentCalibrationStep = 1;
+
+function startCalibrationOnboarding() {
+    currentCalibrationStep = 1;
+    showCalibrationStep(1);
+
+    // Auto-advance step 1 after 2 seconds
+    setTimeout(() => {
+        if (currentCalibrationStep === 1) {
+            nextCalibrationStep();
+        }
+    }, 2000);
+}
+
+function showCalibrationStep(step) {
+    // Hide all steps
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById(`step-${i}`).classList.add('hidden');
+    }
+    // Show current step
+    document.getElementById(`step-${step}`).classList.remove('hidden');
+    currentCalibrationStep = step;
+}
+
+function nextCalibrationStep() {
+    if (currentCalibrationStep < 4) {
+        showCalibrationStep(currentCalibrationStep + 1);
+    }
+}
+
 function initGame() {
     // Clear existing game objects
     gameState.started = true;
@@ -940,20 +970,12 @@ function gameLoop(currentTime) {
             // Thrust buttons - газ up relative to helicopter, reverse down relative to world
             if (mobileInput.thrustUp) {
                 helicopter.thrust = helicopter.maxThrust;
-                console.log('🚁 GAME LOOP: thrustUp=true, setting thrust to', helicopter.maxThrust);
             } else if (mobileInput.thrustDown) {
                 // Reverse thrust - always downward in world space
                 helicopter.thrust = -helicopter.maxThrust * 0.7;
-                console.log('🚁 GAME LOOP: thrustDown=true, setting thrust to', -helicopter.maxThrust * 0.7);
             } else {
                 helicopter.thrust = 0;
             }
-            console.log('🎮 Mobile input state:', {
-                thrustUp: mobileInput.thrustUp,
-                thrustDown: mobileInput.thrustDown,
-                thrust: helicopter.thrust,
-                gameStarted: gameState.started
-            });
 
             // Yaw buttons (buttons are swapped in event handlers)
             helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
@@ -967,8 +989,8 @@ function gameLoop(currentTime) {
                 helicopter.pitchInput = 0;
             }
 
-            // Shooting
-            if (mobileInput.shooting && currentTime - lastShootTime > shootDelay * 1000) {
+            // Automatic shooting on mobile
+            if (currentTime - lastShootTime > shootDelay * 1000) {
                 lastShootTime = currentTime;
                 const newBullets = helicopter.shoot();
                 bullets.push(...newBullets);
@@ -1043,7 +1065,15 @@ function gameLoop(currentTime) {
 // EVENT LISTENERS
 // ============================================================================
 document.getElementById('start-btn').addEventListener('click', () => {
-    initGame();
+    if (isMobile) {
+        // Show calibration onboarding for mobile
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('calibration-screen').classList.remove('hidden');
+        startCalibrationOnboarding();
+    } else {
+        // Desktop - start game directly
+        initGame();
+    }
 });
 
 document.getElementById('restart-btn').addEventListener('click', () => {
@@ -1289,6 +1319,77 @@ if (isMobile) {
     checkOrientation();
     window.addEventListener('orientationchange', checkOrientation);
     window.addEventListener('resize', checkOrientation);
+
+    // ============================================================================
+    // ONBOARDING BUTTON HANDLERS
+    // ============================================================================
+    const onboardingTiltToggle = document.getElementById('onboarding-tilt-toggle');
+    const onboardingCalibrate = document.getElementById('onboarding-calibrate');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const skipCalibration = document.getElementById('skip-calibration');
+
+    // Onboarding tilt toggle button
+    onboardingTiltToggle.addEventListener('click', async () => {
+        // Request permission for iOS 13+
+        if (typeof DeviceOrientationEvent !== 'undefined' &&
+            typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                const permission = await DeviceOrientationEvent.requestPermission();
+                if (permission === 'granted') {
+                    enableTilt();
+                    onboardingTiltToggle.classList.add('active');
+                    onboardingTiltToggle.textContent = '✓ Тилт активен';
+                    document.getElementById('tilt-status').textContent = 'Тилт включен!';
+                    // Auto-advance to step 3
+                    setTimeout(() => {
+                        if (currentCalibrationStep === 2) {
+                            nextCalibrationStep();
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Permission denied:', error);
+                document.getElementById('tilt-status').textContent = 'Ошибка: разрешение не получено';
+            }
+        } else {
+            // Non-iOS or older iOS
+            enableTilt();
+            onboardingTiltToggle.classList.add('active');
+            onboardingTiltToggle.textContent = '✓ Тилт активен';
+            document.getElementById('tilt-status').textContent = 'Тилт включен!';
+            // Auto-advance to step 3
+            setTimeout(() => {
+                if (currentCalibrationStep === 2) {
+                    nextCalibrationStep();
+                }
+            }, 1000);
+        }
+    });
+
+    // Onboarding calibrate button
+    onboardingCalibrate.addEventListener('click', () => {
+        calibrateTilt();
+        document.getElementById('calibration-status').textContent = '✓ Откалибровано!';
+        onboardingCalibrate.classList.add('active');
+        // Auto-advance to step 4
+        setTimeout(() => {
+            if (currentCalibrationStep === 3) {
+                nextCalibrationStep();
+            }
+        }, 1000);
+    });
+
+    // Start game button (after onboarding)
+    startGameBtn.addEventListener('click', () => {
+        document.getElementById('calibration-screen').classList.add('hidden');
+        initGame();
+    });
+
+    // Skip calibration button
+    skipCalibration.addEventListener('click', () => {
+        document.getElementById('calibration-screen').classList.add('hidden');
+        initGame();
+    });
 }
 
 // ============================================================================
