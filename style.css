@@ -1,0 +1,252 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-size: 16px;
+    pointer-events: auto;
+}
+
+.hud-item {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.label {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.value {
+    color: #fff;
+    font-size: 18px;
+}
+
+.health-bar {
+    width: 200px;
+    height: 20px;
+    background: rgba(255, 0, 0, 0.3);
+    border: 2px solid #0f0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.health-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #f00, #0f0);
+    transition: width 0.3s ease;
+}
+
+#controls-hint {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-size: 14px;
+    pointer-events: auto;
+}
+
+#controls-hint h3 {
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+#controls-hint p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+#controls-hint strong {
+    color: #fff;
+    min-width: 60px;
+    display: inline-block;
+}
+
+#game-over,
+#start-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 40px;
+    border-radius: 20px;
+    border: 3px solid #0f0;
+    text-align: center;
+    color: #0f0;
+    pointer-events: auto;
+    min-width: 400px;
+}
+
+#game-over h1,
+#start-screen h1 {
+    color: #f00;
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #f00;
+}
+
+#start-screen h2 {
+    color: #fff;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+#game-over p,
+#start-screen p {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #fff;
+}
+
+#restart-btn,
+#start-btn {
+    margin-top: 20px;
+    padding: 15px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    background: #0f0;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#restart-btn:hover,
+#start-btn:hover {
+    background: #0ff;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #0f0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Mobile Controls */
+#mobile-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 300px;
+    pointer-events: auto;
+}
+
+.joystick {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    bottom: 30px;
+}
+
+#joystick-left {
+    left: 30px;
+}
+
+#joystick-right {
+    right: 30px;
+}
+
+/* Crosshair */
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+}
+
+#crosshair::before,
+#crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(0, 255, 0, 0.7);
+}
+
+#crosshair::before {
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#crosshair::after {
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #hud {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    #controls-hint {
+        display: none;
+    }
+
+    #game-over,
+    #start-screen {
+        min-width: 300px;
+        padding: 20px;
+    }
+
+    #game-over h1,
+    #start-screen h1 {
+        font-size: 32px;
+    }
+}
