@@ -944,8 +944,8 @@ function gameLoop(currentTime) {
                 helicopter.thrust = 0;
             }
 
-            // Yaw buttons (swapped signs)
-            helicopter.yawInput = mobileInput.yawLeft ? 1 : mobileInput.yawRight ? -1 : 0;
+            // Yaw buttons (buttons are swapped in event handlers)
+            helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
 
             // Tilt controls roll and pitch
             if (mobileInput.tiltEnabled) {
@@ -1089,32 +1089,34 @@ if (isMobile) {
         mobileInput.thrustDown = false;
     });
 
-    // Yaw Left
+    // Yaw Left - SWAPPED: left button controls RIGHT input
     btnYawLeft.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        mobileInput.yawLeft = true;
+        mobileInput.yawRight = true;
+        console.log('LEFT BUTTON -> yawRight');
     });
     btnYawLeft.addEventListener('touchend', (e) => {
         e.preventDefault();
-        mobileInput.yawLeft = false;
+        mobileInput.yawRight = false;
     });
     btnYawLeft.addEventListener('touchcancel', (e) => {
         e.preventDefault();
-        mobileInput.yawLeft = false;
+        mobileInput.yawRight = false;
     });
 
-    // Yaw Right
+    // Yaw Right - SWAPPED: right button controls LEFT input
     btnYawRight.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        mobileInput.yawRight = true;
+        mobileInput.yawLeft = true;
+        console.log('RIGHT BUTTON -> yawLeft');
     });
     btnYawRight.addEventListener('touchend', (e) => {
         e.preventDefault();
-        mobileInput.yawRight = false;
+        mobileInput.yawLeft = false;
     });
     btnYawRight.addEventListener('touchcancel', (e) => {
         e.preventDefault();
-        mobileInput.yawRight = false;
+        mobileInput.yawLeft = false;
     });
 
     // Shoot
