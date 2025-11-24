@@ -200,17 +200,19 @@ class Helicopter {
         // Apply gravity
         this.velocity.add(gravity.multiplyScalar(deltaTime));
 
-        // Apply thrust (upward force)
-        const upForce = new THREE.Vector3(0, this.thrust * (this.turbo ? 1.5 : 1), 0);
-        this.velocity.add(upForce.multiplyScalar(deltaTime));
+        // Create rotation matrix from current orientation
+        const rotationMatrix = new THREE.Matrix4();
+        rotationMatrix.makeRotationFromEuler(this.rotation);
+
+        // Apply thrust (upward force relative to helicopter orientation)
+        const up = new THREE.Vector3(0, 1, 0);
+        up.applyMatrix4(rotationMatrix);
+        const upForce = up.multiplyScalar(this.thrust * (this.turbo ? 1.5 : 1) * deltaTime);
+        this.velocity.add(upForce);
 
         // Apply rotational forces based on tilt
         const forward = new THREE.Vector3(0, 0, 1);
         const right = new THREE.Vector3(1, 0, 0);
-
-        // Create rotation matrix from current orientation
-        const rotationMatrix = new THREE.Matrix4();
-        rotationMatrix.makeRotationFromEuler(this.rotation);
 
         // Apply pitch (forward/backward tilt)
         forward.applyMatrix4(rotationMatrix);
@@ -943,7 +945,7 @@ function gameLoop(currentTime) {
             }
 
             // Yaw buttons
-            helicopter.yawInput = mobileInput.yawLeft ? 1 : mobileInput.yawRight ? -1 : 0;
+            helicopter.yawInput = mobileInput.yawLeft ? -1 : mobileInput.yawRight ? 1 : 0;
 
             // Tilt controls roll and pitch
             if (mobileInput.tiltEnabled) {
@@ -1216,7 +1218,7 @@ if (isMobile) {
 
         // Normalize to -1 to 1 range with dead zone
         const sensitivity = 30; // degrees for full range
-        const deadZone = 3; // degrees
+        const deadZone = 5; // degrees - increased for stability
 
         // Pitch (forward/back) - use beta
         let pitch = -calibratedBeta / sensitivity;
